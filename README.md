@@ -1,1 +1,3 @@
-# Dataset-for-MyoGAN
+# Dataset for MyoGAN
+
+Provide dataset for MyoGAN!
