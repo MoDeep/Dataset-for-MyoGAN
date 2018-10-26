@@ -1,26 +1,30 @@
-"""MyoHand Dataset
-"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import boto3
+import botocore
 
-from ..utils.data_utils import get_file
-import numpy as np
+import shutil
+import os
 
+import tarfile
 
-def load_data(path='mnist.npz'):
-    """Loads the MNIST dataset.
-    # Arguments
-        path: path where to cache the dataset locally
-            (relative to ~/.keras/datasets).
-    # Returns
-        Tuple of Numpy arrays: `(x_train, y_train), (x_test, y_test)`.
-    """
-    path = get_file(path,
-                    origin='https://s3.amazonaws.com/img-datasets/mnist.npz',
-                    file_hash='8a61469f7ea1b51cbae51d4f78837e45')
-    f = np.load(path)
-    x_train, y_train = f['x_train'], f['y_train']
-    x_test, y_test = f['x_test'], f['y_test']
-    f.close()
-    return (x_train, y_train), (x_test, y_test)
+BUCKET_NAME = 'myohand-dataset'
+KEY = 'myohand.tar'
+output = 'myohand.tar'
+
+s3 = boto3.resource('s3')
+
+try:
+    s3.Bucket(BUCKET_NAME).download_file(KEY, output)
+except botocore.exceptions.ClientError as e:
+    if e.response['Error']['Code'] == "404":
+        print("The object does not exist.")
+    else:
+        raise
+
+curr_path = os.getcwd() + '/'
+path = input('Please input download path: ')
+
+print('Moving to ' + path + '...')
+shutil.move(os.getcwd() + "\\" + output, path + "\\" + output)
+print('Success!')
+
+dataset_tar = tarfile.TarFile(path + "\\" + output)
